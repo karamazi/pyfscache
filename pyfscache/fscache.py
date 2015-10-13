@@ -2,7 +2,10 @@
 
 import os
 import hashlib
-import cPickle
+try:
+    import cPickle as pickle
+except:
+    import pickle
 import time
 import base64
 import inspect
@@ -91,7 +94,7 @@ class FSCache(object):
       >>> from pyfscache import *
       >>> if os.path.exists('cache/dir'):
       ...   shutil.rmtree('cache/dir')
-      ... 
+      ...
       >>> c = FSCache('cache/dir', days=7)
       >>> c['some_key'] = "some_value"
       >>> c['some_key']
@@ -106,7 +109,7 @@ class FSCache(object):
       ... def doit(avalue):
       ...   print "had to call me!"
       ...   return "some other value"
-      ... 
+      ...
       >>> doit('some input')
       had to call me!
       'some other value'
@@ -141,7 +144,7 @@ class FSCache(object):
       self._lifetime = to_seconds(**kwargs)
       if self._lifetime <= 0:
         msg = "Lifetime (%s seconds) is 0 or less." % self._lifetime
-        raise LifetimeError, msg
+        raise LifetimeError(msg)
     else:
       self._lifetime = None
     self._loaded = {}
@@ -174,7 +177,7 @@ class FSCache(object):
       tmplt = ("Object for key `%s` exists\n." +
                "Remove the old one before setting the new object.")
       msg = tmplt % str(k)
-      raise CacheError, msg
+      raise CacheError(msg)
     else:
       expiry = self.expiry()
       contents = CacheObject(v, expiration=expiry)
@@ -193,7 +196,7 @@ class FSCache(object):
       del(self._loaded[digest])
     else:
       msg = "Object for key `%s` has not been loaded" % str(k)
-      raise CacheError, msg
+      raise CacheError(msg)
   def __contains__(self, k):
     """
     Returns ``True`` if an object keyed by `k` is
@@ -247,7 +250,7 @@ class FSCache(object):
       contents = load(path)
     else:
       msg = "Object for key `%s` does not exist." % (k,)
-      raise CacheError, msg
+      raise CacheError(msg)
     self._loaded[digest] = contents
     return contents
   def _remove(self, k):
@@ -263,7 +266,7 @@ class FSCache(object):
       os.remove(path)
     else:
       msg = "No object for key `%s` stored." % str(k)
-      raise CacheError, msg
+      raise CacheError(msg)
   def is_loaded(self, k):
     """
     Returns ``True`` if the item keyed by `k` has been loaded,
@@ -328,7 +331,7 @@ class FSCache(object):
     """
     Returns a list of keys for all objects that are loaded.
     """
-    return self._loaded.keys()
+    return list(self._loaded.keys())
   def get_names(self):
     """
     Returns the names of the files in the cache on the
@@ -380,10 +383,10 @@ def make_digest(k):
   >>> make_digest(adict)
   'a2VKynHgDrUIm17r6BQ5QcA5XVmqpNBmiKbZ9kTu0A'
   """
-  s = cPickle.dumps(k)
+  s = pickle.dumps(k)
   h = hashlib.sha256(s).digest()
   b64 = base64.urlsafe_b64encode(h)[:-2]
-  return b64.replace('-', '=')
+  return b64.replace(b'-', b'=').decode()
 
 def load(filename):
   """
@@ -391,7 +394,7 @@ def load(filename):
   from the file named by `filename`.
   """
   f = open(filename, 'rb')
-  obj = cPickle.load(f)
+  obj = pickle.load(f)
   f.close()
   return obj
 
@@ -401,7 +404,7 @@ def dump(obj, filename):
   into the file named by `filename`.
   """
   f = open(filename, 'wb')
-  cPickle.dump(obj, f, cPickle.HIGHEST_PROTOCOL)
+  pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
   f.close()
 
 def auto_cache_function(f, cache):
@@ -410,7 +413,7 @@ def auto_cache_function(f, cache):
   The `cache` can be any mapping object, such as `FSCache` objects.
 
   The function arguments are expected to be well-behaved
-  for python's :py:mod:`cPickle`. Or, in other words, 
+  for python's :py:mod:`cPickle`. Or, in other words,
   the expected values for the parameters (the arguments) should
   be instances new-style classes (i.e. inheriting from
   :class:`object`) or implement :func:`__getstate__` with
@@ -421,7 +424,7 @@ def auto_cache_function(f, cache):
   """
   m = inspect.getmembers(f)
   try:
-    fid = (f.func_name, inspect.getargspec(f))
+    fid = (f.__name__, inspect.getargspec(f))
   except (AttributeError, TypeError):
     fid = (f.__name__, repr(type(f)))
   def _f(*args, **kwargs):
@@ -434,7 +437,7 @@ def auto_cache_function(f, cache):
     return result
   return _f
 
-    
+
 def cache_function(f, keyer, cache):
   """
   Takes any function `f` and a function that creates a key,
@@ -526,7 +529,7 @@ def to_seconds(**kwargs):
   63150895.42
   """
   seconds = []
-  for k, v in kwargs.items():
+  for k, v in list(kwargs.items()):
     if k in TIME_CONVERTERS:
       seconds.append(TIME_CONVERTERS[k](v))
     else:

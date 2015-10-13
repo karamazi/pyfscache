@@ -2,8 +2,12 @@
 
 import os
 
-from StringIO import StringIO
-from ConfigParser import ConfigParser
+try:
+    from StringIO import StringIO
+    from ConfigParser import ConfigParser
+except:
+    from io import StringIO
+    from configparser import ConfigParser
 from setuptools import setup, find_packages
 
 # avoid sectionlesslessness (& case insensitivity) of ConfigParser
@@ -32,7 +36,7 @@ setup(name = info['PACKAGE'],
       # requires = [],
       test_suite = info['PACKAGE'] + '.tests.test_suite',
       classifiers = [
-            'Programming Language :: Python :: 2.5',
-            'Programming Language :: Python :: 2.6',
-            'Programming Language :: Python :: 2.7', ],
+            'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3',
+      ],
       )

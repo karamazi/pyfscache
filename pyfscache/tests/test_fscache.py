@@ -46,13 +46,13 @@ class FSCacheTestCase(unittest.TestCase):
     self.assertEqual(self.f.get_names(), [])
     # print "f.names should be []. They are:", f.names()
   def test_003_setitem_getitem_with_int(self):
-    adict = dict(zip('abcdef',range(6)))
+    adict = dict(list(zip('abcdef',list(range(6)))))
     bdict = adict.copy()
     # print 'adict is:', adict
     self.f[3] = adict
     self.assertEqual(self.f[3], bdict)
   def test_004_setitem_getitem_with_list(self):
-    adict = dict(zip('abcdef',range(6)))
+    adict = dict(list(zip('abcdef',list(range(6)))))
     bdict = adict.copy()
     self.f[[2,3,4]] = adict
     self.assertEqual(self.f[[2,3,4]], bdict)
@@ -65,7 +65,7 @@ class FSCacheTestCase(unittest.TestCase):
     self.f.expire(2)
     self.assertFalse(self.f.is_loaded(2))
   def test_007_loaded_unload_isloaded(self):
-    self.assertEquals(sorted(self.f.get_loaded()), self.names)
+    self.assertEqual(sorted(self.f.get_loaded()), self.names)
     self.f.unload(2)
     self.assertTrue(self.f.is_loaded(1))
     self.assertFalse(self.f.is_loaded(2))
@@ -76,17 +76,17 @@ class FSCacheTestCase(unittest.TestCase):
     self.assertTrue(1 in self.f)
   def test_009_clear_load(self):
     self.f.clear()
-    self.assertEquals(self.f.get_loaded(), [])
-    self.assertEquals(sorted(self.f.get_names()), self.names)
+    self.assertEqual(self.f.get_loaded(), [])
+    self.assertEqual(sorted(self.f.get_names()), self.names)
     self.f.load(1)
     self.assertTrue(self.f.is_loaded(1))
   def test_010_update_item(self):
     new_second = 'ijkl'
     self.assertEqual(self.f[2], self.second)
     self.f.update_item(2, new_second)
-    self.assertEquals(self.f[2], new_second)
+    self.assertEqual(self.f[2], new_second)
   def test_011_path(self):
-    self.assertEquals(self.f.path, self.path_name)
+    self.assertEqual(self.f.path, self.path_name)
   def test_012_negative_lifetime(self):
     self.assertRaises(LifetimeError, FSCache,
                       self.path_name, seconds=60, minutes=-2)
@@ -95,7 +95,7 @@ class FSCacheTestCase(unittest.TestCase):
   def test_100_make_key(self):
     digest = 'a2VKynHgDrUIm17r6BQ5QcA5XVmqpNBmiKbZ9kTu0A'
     adict = {'a' : {'b':1}, 'f': []}
-    self.assertEquals(make_digest(adict), digest)
+    self.assertEqual(make_digest(adict), digest)
   def test_101_cache_function(self):
     abort = False
     def fun(a, b=2):
@@ -113,7 +113,7 @@ class FSCacheTestCase(unittest.TestCase):
     call_cfun()
     abort = True
     self.assertTrue(key in self.f)
-    self.assertEquals(result, call_cfun())
+    self.assertEqual(result, call_cfun())
   def test_102_auto_cache_function(self):
     abort = False
     def fun(a, b=2):
@@ -127,7 +127,7 @@ class FSCacheTestCase(unittest.TestCase):
     call_acfun = lambda: acfun(a, b=b)
     call_acfun()
     abort = True
-    self.assertEquals(result, call_acfun())
+    self.assertEqual(result, call_acfun())
   def test_103_expiration(self):
     self.x['Bob'] = 18
     time.sleep(0.1)
@@ -151,13 +151,13 @@ class FSCacheTestCase(unittest.TestCase):
     call_acfun = lambda: acfun(a, b=b)
     call_acfun()
     abort = True
-    self.assertEquals(result, call_acfun())
+    self.assertEqual(result, call_acfun())
   def test_105_instancemethod(self):
     state['abort'] = False
     c = C()
     c.doit(1, 2, 3, 4)
     state['abort'] = True
-    self.assertEquals([1, 2, 3, 4], c.doit(1, 2, 3, 4))
+    self.assertEqual([1, 2, 3, 4], c.doit(1, 2, 3, 4))
   def test_106_ctype(self):
     cached_list = self.f(list)
     alist = cached_list((1, 2, 3))
@@ -166,11 +166,11 @@ class FSCacheTestCase(unittest.TestCase):
     s = to_seconds(years=2.1, months=4.2, weeks=1.9, days=2,
                    hours=3.5, minutes=8,
                              seconds=10.87)
-    self.assertEquals(s, 78649408.87)
+    self.assertEqual(s, 78649408.87)
     s = to_seconds(seconds=15, minutes=20)
-    self.assertEquals(s, 1215.0)
+    self.assertEqual(s, 1215.0)
     s = to_seconds(seconds=15.42, hours=10, minutes=18, years=2)
-    self.assertEquals(s, 63150895.42)
+    self.assertEqual(s, 63150895.42)
 
     
 def test_suite():
