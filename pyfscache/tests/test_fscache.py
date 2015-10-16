@@ -1,17 +1,18 @@
 import os
 import time
 import shutil
+import sys
 import unittest
 
-
-from pyfscache.fscache import *
-from pyfscache.fscache import LifetimeError
-
+from ..fscache import *
+from ..fscache import LifetimeError
 
 TESTCACHE = 'test-cache'
 
 state = {'abort' : False}
 
+_PY2 = sys.version_info[0] == 2
+_PY3 = sys.version_info[0] == 3
 
 class C(object):
   def __init__(self):
@@ -22,6 +23,7 @@ class C(object):
       raise Exception
     return [a, r, g, s]
 
+
 class FSCacheTestCase(unittest.TestCase):
   def setUp(self):
     # class C(object): pass
@@ -30,8 +32,20 @@ class FSCacheTestCase(unittest.TestCase):
     self.f = FSCache(self.path_name)
     self.x = FSCache(self.path_name, seconds=0.3)
     self.f.purge()
-    self.names = ['ETajeDeuWH9cB2alMEOUaBPQ2by_gf_IMb=gU5B3Tz',
-                  'zGa=5yeyE6wYkE9pVICruCO_JG5cBjWYNJNOPZnXQa']
+    if _PY2:
+      self.names = [
+        'ETajeDeuWH9cB2alMEOUaBPQ2by_gf_IMb=gU5B3Tz',
+        'zGa=5yeyE6wYkE9pVICruCO_JG5cBjWYNJNOPZnXQa',
+      ]
+      self.digest = 'a2VKynHgDrUIm17r6BQ5QcA5XVmqpNBmiKbZ9kTu0A'
+    elif _PY3:
+      self.names = [
+        '3v5L3VUYfLSdWGfCBDwQqytipHl12xDbUhiImXmQKO',
+        'TWcqnbeV8BBdU2YmzRkMKO0ZnMjRReI0nlRX9_9vOL',
+      ]
+      self.digest = '=UgP6wwOconsez2NFsBmKkMW6yGnRcu8XOKf0HVeq1'
+    else:
+      assert False, "Unknown python version: {}".format(sys.version_info)
     self.names.sort()
     self.first = 'abcd'
     self.second = 'efgh'
@@ -44,11 +58,11 @@ class FSCacheTestCase(unittest.TestCase):
   def test_002_purge(self):
     self.f.purge()
     self.assertEqual(self.f.get_names(), [])
-    # print "f.names should be []. They are:", f.names()
+    # print("f.names should be []. They are:", f.names())
   def test_003_setitem_getitem_with_int(self):
     adict = dict(list(zip('abcdef',list(range(6)))))
     bdict = adict.copy()
-    # print 'adict is:', adict
+    # print('adict is:', adict)
     self.f[3] = adict
     self.assertEqual(self.f[3], bdict)
   def test_004_setitem_getitem_with_list(self):
@@ -93,9 +107,8 @@ class FSCacheTestCase(unittest.TestCase):
     self.assertRaises(LifetimeError, FSCache,
                       self.path_name, seconds=180, minutes=-3)
   def test_100_make_key(self):
-    digest = 'a2VKynHgDrUIm17r6BQ5QcA5XVmqpNBmiKbZ9kTu0A'
     adict = {'a' : {'b':1}, 'f': []}
-    self.assertEqual(make_digest(adict), digest)
+    self.assertEqual(make_digest(adict), self.digest)
   def test_101_cache_function(self):
     abort = False
     def fun(a, b=2):
@@ -172,7 +185,7 @@ class FSCacheTestCase(unittest.TestCase):
     s = to_seconds(seconds=15.42, hours=10, minutes=18, years=2)
     self.assertEqual(s, 63150895.42)
 
-    
+
 def test_suite():
   tl = unittest.TestLoader()
   return tl.loadTestsFromTestCase(FSCacheTestCase)

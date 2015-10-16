@@ -1,3 +1,6 @@
+2015-10-16 Ran 2to3, making it Python3 compatible.
+           Fixed unit tests becuase of different result of `pickle`
+
 2015-01-29 Removed configobj dependency from setup.py.
            Also from Makefile, which imports as an .inc.
            Thanks to anentropic for pointing out this issue

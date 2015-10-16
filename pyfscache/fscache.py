@@ -4,7 +4,7 @@ import os
 import hashlib
 try:
     import cPickle as pickle
-except:
+except ImportError:
     import pickle
 import time
 import base64
@@ -274,16 +274,6 @@ class FSCache(object):
     """
     digest = make_digest(k)
     return digest in self._loaded
-  def unload(self, k):
-    """
-    Removes the object keyed by `k` from memory
-    but not from the filesystem. To remove the object
-    keyed by `k` from both memory and permanently from the
-    filesystem, use `expire`.
-
-    Synonymous with deleting an item.
-    """
-    del self[k]
   def expire(self, k):
     """
     Use with care. This permanently removes the object keyed
